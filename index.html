@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Учи английский / Learn English</title>
+  <style>
+    /* Фон на весь экран */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('https://www.iphones.ru/wp-content/uploads/2016/06/Headereng.jpg'); /* Ссылка на фон */
+      background-size: cover; /* Растягивает фон на весь экран */
+      background-position: center; /* Центрирует фон */
+      background-repeat: no-repeat; /* Убирает повторение фона */
+      background-attachment: fixed; /* Фиксирует фон при прокрутке */
+      min-height: 100vh; /* Минимальная высота — весь экран */
+      color: black;
+      text-align: center;
+    }
+
+    /* Логотип при загрузке */
+    #logo-container {
+      width: 100%;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #logo {
+      max-width: 300px;
+    }
+
+    /* Игровой контейнер */
+    #game-container {
+      margin-top: 50px;
+      display: none;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 50px auto;
+    }
+
+    #next-level {
+      display: none;
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 18px;
+      background-color: yellow;
+      cursor: pointer;
+      border: 2px solid black;
+      border-radius: 5px;
+    }
+
+    /* Движущийся кот в правом верхнем углу */
+    #moving-cat {
+      font-size: 18px;
+      background-color: lightblue;
+      padding: 5px 10px;
+      border-radius: 10px;
+      animation: moveCat 3s infinite alternate;
+      z-index: 1100;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+    }
+
+    @keyframes moveCat {
+      from { transform: translateX(0); }
+      to { transform: translateX(50px); }
+    }
+
+    /* Стили для вопроса и вариантов ответов */
+    #word {
+      font-size: 40px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .answer-btn {
+      display: block;
+      width: 200px;
+      margin: 10px auto;
+      padding: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      border: 2px solid black;
+      border-radius: 10px;
+      background-color: lightgray;
+      transition: background-color 0.3s;
+    }
+
+    .correct { background-color: green !important; color: white; }
+    .wrong { background-color: red !important; color: white; }
+
+    #score {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+
+    /* Текстовый блок на английском */
+    .english-text {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: left;
+      max-width: 300px;
+    }
+
+    .english-text h2 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .english-text p {
+      margin: 0;
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <!-- Логотип при загрузке -->
+  <div id="logo-container">
+    <img id="logo" src="https://avatars.dzeninfra.ru/get-zen_doc/9795216/pub_6467333b28bffe526c2f2ee9_646733cd59d57c1f7feae1e9/scale_1200" alt="Учи английский">
+  </div>
+
+  <!-- Текстовый блок на английском -->
+  <div class="english-text">
+  </div>
+
+  <!-- Движущийся кот -->
+  <div id="moving-cat"> Учи английский в жизни пригодится 😽😽😼🐱‍👤🐱‍🏍 </div>
+
+  <!-- Игровой контейнер -->
+  <div id="game-container">
+    <button id="next-level">➡ Следующий уровень / Next Level</button>
+    <!-- Отображение английского слова -->
+    <div id="word"></div>
+    <!-- Три варианта ответа (на русском) -->
+    <button class="answer-btn"></button>
+    <button class="answer-btn"></button>
+    <button class="answer-btn"></button>
+    <div id="score">Очки: <span id="points">0</span></div>
+  </div>
+
+  <!-- Аудиофайлы -->
+  <audio id="correct-sound" src="c:\Users\user\Downloads\pole_letter_correct.mp3"></audio>
+  <audio id="wrong-sound" src="c:\Users\user\Downloads\6_sto-k-odnomu-ne-pra_ilnyy-ot_e.mp3"></audio>
+
+  <script>
+    // Через 3 секунды скрываем логотип и показываем игру
+    setTimeout(() => {
+      document.getElementById("logo-container").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+    }, 3000);
+
+    // Массив пар: [английское слово, русский перевод]
+    const pairs = [
+      ["brother", "брат"],
+      ["banana", "банан"],
+      ["pear", "груша"],
+      ["pepper", "перец"],
+      ["carrot", "морковь"],
+      ["grape", "виноград"],
+      ["pineapple", "ананас"],
+      ["cherry", "вишня"],
+      ["watermelon", "арбуз"],
+      ["melon", "дыня"],
+      ["orange", "апельсин"],
+      ["strawberry", "клубника"],
+      ["peach", "персик"],
+      ["plum", "слива"],
+      ["cucumber", "огурец"],
+      ["potato", "картофель"],
+      ["tomato", "помидор"],
+      ["onion", "лук"],
+      ["garlic", "чеснок"],
+      ["pumpkin", "тыква"],
+      ["mango", "манго"],
+      ["kiwi", "киви"],
+      ["lemon", "лимон"],
+      ["lime", "лайм"],
+      ["blueberry", "черника"],
+      ["raspberry", "малина"],
+      ["blackberry", "ежевика"],
+      ["grapefruit", "грейпфрут"],
+      ["pomegranate", "гранат"],
+      ["papaya", "папайя"],
+      ["apricot", "абрикос"],
+      ["avocado", "авокадо"],
+      ["cantaloupe", "канталупа"],
+      ["date", "финик"],
+      ["fig", "инжир"],
+      ["guava", "гуава"],
+      ["jackfruit", "джекфрут"],
+      ["kumquat", "кумкват"],
+      ["lychee", "личи"],
+      ["nectarine", "нектарин"],
+      ["olive", "оливка"],
+      ["passionfruit", "маракуйя"],
+      ["quince", "айва"],
+      ["starfruit", "карамбола"],
+      ["tangerine", "мандарин"],
+      ["ugli fruit", "угли фрукт"],
+      ["voavanga", "воаванга"],
+      ["water apple", "водное яблоко"],
+      ["ximenia", "ксимения"],
+      ["yellow passionfruit", "желтая маракуйя"],
+      ["ziziphus", "хурма"],
+      ["broccoli", "брокколи"],
+      ["cabbage", "капуста"],
+      ["cauliflower", "цветная капуста"],
+      ["celery", "сельдерей"],
+      ["corn", "кукуруза"],
+      ["eggplant", "баклажан"],
+      ["lettuce", "салат"],
+      ["mushroom", "гриб"],
+      ["pea", "горох"],
+      ["spinach", "шпинат"],
+      ["sweet potato", "батат"],
+      ["turnip", "репа"],
+      ["zucchini", "цукини"],
+      ["radish", "редис"],
+      ["beet", "свекла"],
+      ["artichoke", "артишок"],
+      ["asparagus", "спаржа"],
+      ["leek", "порей"],
+      ["parsnip", "пастернак"],
+    ];
+
+    // Всего 29 уровней
+    const totalLevels = 29;
+    let levels = [];
+
+    // Функция перемешивания массива
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Создание уровней
+    for (let i = 0; i < totalLevels; i++) {
+      let levelPairs = [...pairs]; // Копируем массив пар
+      shuffle(levelPairs); // Перемешиваем
+      levels.push(levelPairs.slice(0, 100)); // Берем первые 100 слов для уровня
+    }
+
+    let currentLevel = 0;
+    let currentWord = 0;
+    let points = localStorage.getItem("points") ? parseInt(localStorage.getItem("points")) : 0;
+
+    // Отображение очков
+    document.getElementById("points").innerText = points;
+
+    // Загрузка текущего слова и вариантов ответа
+    function loadWord() {
+      if (currentWord >= levels[currentLevel].length) {
+        document.getElementById("next-level").style.display = "block";
+        return;
+      }
+      let wordObj = levels[currentLevel][currentWord];
+      document.getElementById("word").innerText = wordObj[0];
+      let buttons = document.getElementsByClassName("answer-btn");
+      let currentLevelWords = levels[currentLevel];
+      let incorrect = [];
+      while (incorrect.length < 2) {
+        let rand = Math.floor(Math.random() * currentLevelWords.length);
+        if (currentLevelWords[rand][1] !== wordObj[1] && !incorrect.includes(currentLevelWords[rand][1])) {
+          incorrect.push(currentLevelWords[rand][1]);
+        }
+      }
+      let options = [wordObj[1], ...incorrect];
+      shuffle(options);
+      options.forEach((option, index) => {
+        buttons[index].innerText = option;
+        buttons[index].classList.remove("correct", "wrong");
+        buttons[index].style.backgroundColor = "lightgray";
+        buttons[index].onclick = function () {
+          checkAnswer(option, wordObj[1], buttons[index]);
+        };
+      });
+    }
+
+    // Проверка ответа
+    function checkAnswer(selected, correct, btn) {
+      let correctSound = document.getElementById("correct-sound");
+      let wrongSound = document.getElementById("wrong-sound");
+      if (selected === correct) {
+        btn.classList.add("correct");
+        points += 10;
+        correctSound.play();
+      } else {
+        btn.classList.add("wrong");
+        points -= 2;
+        wrongSound.play();
+      }
+      // Сохраняем очки в localStorage
+      localStorage.setItem("points", points);
+      document.getElementById("points").innerText = points;
+      setTimeout(() => {
+        currentWord++;
+        if (currentWord < levels[currentLevel].length) {
+          loadWord();
+        } else {
+          document.getElementById("next-level").style.display = "block";
+        }
+      }, 500);
+    }
+
+    // Переход на следующий уровень
+    document.getElementById("next-level").addEventListener("click", function () {
+      currentLevel++;
+      if (currentLevel < totalLevels) {
+        currentWord = 0;
+        document.getElementById("next-level").style.display = "none";
+        loadWord();
+      } else {
+        alert("Поздравляем! Вы прошли все уровни! / Congratulations! You have completed all levels!");
+      }
+    });
+
+    // Загрузка первого слова
+    loadWord();
+
+    // Функция для изменения фона
+    function setBackground(imageUrl) {
+      document.body.style.backgroundImage = `url('${imageUrl}')`;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
